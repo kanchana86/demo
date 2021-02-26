@@ -1,0 +1,24 @@
+{
+	"flight": [
+		{
+			"ER38sd": {                                                  
+				"airline": "United",
+				"departureDate": "20/05/2015",                           
+				"vacantSeats": 0,                            
+				"originAirport": "MUA",
+				"planeType": "Boeing 737",
+				"price": 400.00,                                         
+				"destinationAirport": "SFO",
+				"transactions": [                                        
+					{
+						"181948544": {                          
+							"customerId": 4564,
+							"customerName": "Max Plack",
+							"amount": "10.5"                              // 
+						}
+					}
+				]
+			}
+		}
+	]
+}

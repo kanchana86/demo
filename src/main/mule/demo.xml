@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d7c0d8cf-3040-40d5-a2ae-83ee1841e1a8" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="1ece66fe-5663-4393-8d77-addb315f0e35" >
+		<file:connection workingDir="C:\Users\Bala\Desktop\Newfolder" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="f4b5b4a8-0290-4d69-ab33-cdcf5b55d8be" >
+		<http:listener-connection host="0.0.0.0" port="8085" />
+	</http:listener-config>
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="aac91a64-e6d8-4414-a7df-9760a4acfe72" >
+		<http:listener-connection host="0.0.0.0" port="8087" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="0f4b8254-acfb-4aaa-a099-6d78a1330707" >
+		<db:my-sql-connection host="localhost" port="3306" user="kanchana" password="pranav2011" database="sakila" />
+	</db:config>
+	<flow name="demoFlow" doc:id="fe68c58d-abce-4963-beb1-3a4f65f49e09" >
+		<http:listener doc:name="Listener" doc:id="742ce572-bf1b-4f42-a122-1fdaf317ff4a" config-ref="HTTP_Listener_config1" path="/api/d"/>
+		<ee:transform doc:name="XML to JSON" doc:id="1f71acdf-66f5-4e74-8215-46812676c86e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+flight: [
+	(payload.flights.flight.@flightCode): {
+		airline: payload.flights.flight.airline,
+		departureDate:payload.flights.flight.departureDate as Date {format:"yyyy-MMM-dd"} 
+		as String {format: "dd/MM/yyyy"},
+        vacantSeats: (payload.flights.flight.emptySeats) as Number,
+		orginAirport: payload.flights.flight.fromAirportCode,
+		planeType: payload.flights.flight.planeType,
+		price: payload.flights.flight.price as Number 
+		            as String {format : "####.00"} as Number,
+		destinationAirport: payload.flights.flight.toAirportCode,
+		transactions: 
+		{
+			(payload.flights.flight.transactions.*transaction filter $."type"== "business"
+				map (transaction,indexOfTransaction)->
+			(transaction.@transID):
+			{
+				customerId : transaction.idCustomer,
+				customerName:transaction.nameCustomer,
+				amount: (transaction.@amount/70) as String
+				}
+			
+			)
+			} 
+		}
+	]
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2c633c8a-d5ba-4164-b51f-a745f3c69758" message="#[payload]"/>
+	</flow>
+	<flow name="demoFlow1" doc:id="186d953c-21f8-444b-968f-f849fd6ce91d" >
+		<http:listener doc:name="Listener" doc:id="e45d6546-446a-4553-859d-1a3dcdd3d656" config-ref="HTTP_Listener_config2" path="/api/demo1"/>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="04e214a8-b4b8-4a2a-b838-305fbe319771" variableName="full"/>
+		<set-variable value="#[attributes.queryParams.country]" doc:name="Set Variable" doc:id="2798f9bb-e0f2-4c07-bd63-67137c0e9d37" variableName="country"/>
+		<db:select doc:id="63658f23-978f-4812-8717-c2a5882c83d9" doc:name="demo1" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from country where country =:name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	name: vars.country
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a5ef6b01-ca6d-4c65-93db-977dc1bf5300" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

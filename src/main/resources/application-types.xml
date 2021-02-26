@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="resource" format="json">
+      <types:shape format="weave" example="examples/demo1.json"><![CDATA[%dw 2.0
+
+type resource = {|
+  empList: Array<{|    empId: Number {"typeId": "int"},     empName: String,     empStatus: String  |}>
+|} {"example": "{\\\"empList\\\":[{\\\"empId\\\":100,\\\"empName\\\":\\\"Pranav\\\",\\\"empStatus\\\":\\\"A\\\"},{\\\"empId\\\":200,\\\"empName\\\":\\\"Pragnya\\\",\\\"empStatus\\\":\\\"A\\\"},{\\\"empId\\\":300,\\\"empName\\\":\\\"Bala\\\",\\\"empStatus\\\":\\\"I\\\"},{\\\"empId\\\":400,\\\"empName\\\":\\\"Hema\\\",\\\"empStatus\\\":\\\"I\\\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="input" format="xml">
+      <types:example format="xml" element="flights" location="examples/input xml (1).xml"/>
+    </types:type>
+    <types:type name="ouput" format="json">
+      <types:shape format="weave" example="examples/output 1.json"><![CDATA[%dw 2.0
+
+type ouput = {|
+  flight: Array<{|    ER38sd: {|      airline: String,       departureDate: String,       vacantSeats: Number {"typeId": "int"},       originAirport: String,       planeType: String,       price: Number {"typeId": "double"},       destinationAirport: String,       transactions: Array<{|        "181948544": {|          customerId: Number {"typeId": "int"},           customerName: String,           amount: String        |}      |}>
+    |}
+  |}>
+|} {"example": "{\\\"flight\\\":[{\\\"ER38sd\\\":{\\\"airline\\\":\\\"United\\\",\\\"departureDate\\\":\\\"20\\/05\\/2015\\\",\\\"vacantSeats\\\":0,\\\"originAirport\\\":\\\"MUA\\\",\\\"planeType\\\":\\\"Boeing 737\\\",\\\"price\\\":400.00,\\\"destinationAirport\\\":\\\"SFO\\\",\\\"transactions\\\":[{\\\"181948544\\\":{\\\"customerId\\\":4564,\\\"customerName\\\":\\\"Max Plack\\\",\\\"amount\\\":\\\"10.5\\\"}}]}}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="csvoutput" format="csv">
+      <types:shape format="weave" example="examples/output 1-2.csv"><![CDATA[%dw 2.0
+
+type csvoutput = Array<{|  "FlightId|Airline|transactionId|customerId|customerName|amount": String,   "": String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#1f71acdf-66f5-4e74-8215-46812676c86e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="ouput"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#d92aff06-be35-4c5c-aa7e-e1894a13d50a">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="csvoutput"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

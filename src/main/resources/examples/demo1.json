@@ -1,0 +1,24 @@
+ {
+ "empList" : [
+   {
+	"empId" : 100,
+	"empName" : "Pranav",
+	"empStatus" : "A"
+	},
+   {
+	"empId" : 200,
+	"empName" : "Pragnya",
+	"empStatus" : "A"
+	},
+	{
+    "empId" : 300,
+	"empName" : "Bala",
+	"empStatus" : "I"
+    },
+    {
+    "empId" : 400,
+	"empName" : "Hema",
+	"empStatus" : "I"
+    }
+]
+}
